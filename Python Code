@@ -1,0 +1,90 @@
+import csv
+import re
+import os
+import requests
+
+## Identity Configuration Engine
+TENANT_ID = os.environ.get("AZURE_TENANT_ID", "Add-your-tenant-id-here")
+CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "Add-your-client-id-here")
+CLIENT_SECRET = os.environ.get("AZURE_CLIENT_SECRET", "Add-your-client-secret-here")
+
+def get_graph_access_token():
+    """Requests an OAuth 2.0 token via Client Credentials Grant."""
+    auth_url = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    payload = {
+        "grant_type": "client_credentials",
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "scope": "https://graph.microsoft.com/.default"
+    }
+    
+    response = requests.post(auth_url, headers=headers, data=payload)
+    if response.status_code == 200:
+        return response.json().get("access_token")
+    else:
+        print(f"AUTHENTICATION ERROR: Unable to fetch token. Details: {response.text}")
+        return None
+
+def create_azure_user(token, given_name, family_name, target_username, target_email, assigned_dept):
+    """Executes a POST request to provision the cloud account in Entra ID."""
+    graph_url = "https://graph.microsoft.com/v1.0/users"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    
+    # Payload structured according to MS Graph schema specifications
+    directory_payload = {
+        "accountEnabled": True,
+        "displayName": f"{given_name} {family_name}",
+        "mailNickname": target_username,
+        "userPrincipalName": target_email,
+        "department": assigned_dept,
+        "passwordProfile": {
+            "forceChangePasswordNextSignIn": True,
+            "password": "TempPass2026!"
+        }
+    }
+    
+    response = requests.post(graph_url, headers=headers, json=directory_payload)
+    if response.status_code == 201:
+        print(f"SUCCESS: Created directory account for {target_username}")
+        return True
+    else:
+        error_msg = response.json().get('error', {}).get('message', 'Unknown Error')
+        print(f"PROVISIONING FAILED for {target_username}: {error_msg}")
+        return False
+
+def process_onboarding(csv_filename):
+    print(">> Starting Identity Provisioning Pipeline...")
+    
+    token = get_graph_access_token()
+    if not token:
+        print("Pipeline halted due to authentication failure.")
+        return
+
+    try:
+        with open(csv_filename, mode='r', newline='', encoding='utf-8') as identity_file:
+            user_records = csv.DictReader(identity_file)
+            for record in user_records:
+                first = record.get('FirstName', '').strip()
+                last = record.get('LastName', '').strip()
+                dept = record.get('Department', '').strip()
+                
+                ## Drop rows with missing attributes to prevent cloud sync errors
+                if not first or not last or not dept:
+                    print("WARN: Skipping line missing critical fields.")
+                    continue
+                
+                ## Corporate standard logic setup
+                username = f"{first[0].lower()}{last.lower()}"
+                email = f"{username}@yourcompany.onmicrosoft.com" 
+                
+                create_azure_user(token, first, last, username, email, dept)
+                
+    except FileNotFoundError:
+        print(f"CRITICAL: Target data file '{csv_filename}' cannot be located.")
+
+if __name__ == "__main__":
+    process_onboarding("new_hires.csv")
