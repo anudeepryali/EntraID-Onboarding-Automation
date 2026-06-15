@@ -38,11 +38,7 @@ FirstName,LastName,Department
 Mark,Chandler,IT Support
 Jack,Sparrow,Human Resources
 
-**Plaintext**
+>> Starting Identity Provisioning Pipeline...
+SUCCESS: Created directory account for mchandler
+SUCCESS: Created directory account for jsparrow
 
-Initializing Automated Cloud Onboarding System...
-------------------------------------------------------------
-[LIVE CLOUD] Successfully created Entra ID account for mchandler
-[LIVE CLOUD] Successfully created Entra ID account for jsparrow
-------------------------------------------------------------
-Onboarding Complete.
