@@ -32,11 +32,13 @@ To secure the automation pipeline, configure your runtime environment variables 
 * `AZURE_CLIENT_ID`
 * `AZURE_CLIENT_SECRET`
 
-### 3. Execution Data Sample (`new_hires.csv`)
+### 3. Execution Data Sample (`new_hires.csv`)              
+<img width="384" height="314" alt="image" src="https://github.com/user-attachments/assets/1b7448eb-f372-447e-b355-7895294bcb37" />
+
 ```csv
-FirstName,LastName,Department
+FirstName,LastName,Department                           
 Mark,Chandler,IT Support
-Jack,Sparrow,Human Resources
+Jack,Sparrow,Black Pearl
 
 >> Starting Identity Provisioning Pipeline...
 SUCCESS: Created directory account for mchandler
