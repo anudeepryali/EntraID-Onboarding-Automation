@@ -4,9 +4,9 @@ import os
 import requests
 
 ## Identity Configuration Engine
-TENANT_ID = os.environ.get("AZURE_TENANT_ID", "Add-your-tenant-id-here")
-CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "Add-your-client-id-here")
-CLIENT_SECRET = os.environ.get("AZURE_CLIENT_SECRET", "Add-your-client-secret-here")
+TENANT_ID = os.environ.get("AZURE_TENANT_ID", "tenant-id")
+CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "client-id")
+CLIENT_SECRET = os.environ.get("AZURE_CLIENT_SECRET", "client-secret")
 
 def get_graph_access_token():
     """Requests an OAuth 2.0 token via Client Credentials Grant."""
